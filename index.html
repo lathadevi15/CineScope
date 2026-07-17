@@ -10,8 +10,59 @@
 </head>
 <body>
 
-    <div id="app"></div>
+    <header class="header">
+  <div class="logo">
+    🎬 <span>Movie Explorer</span>
+  </div>
 
+  <div class="search-box">
+    <input type="text" placeholder="Search movies..." />
+    <button>🔍</button>
+  </div>
+
+  <nav class="navbar">
+    <ul>
+      <li><a href="#" class="active">Home</a></li>
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+      <li><a href="#">Trending</a></li>
+
+      <li class="dropdown">
+        <a href="#">Genres ▼</a>
+
+        <ul class="dropdown-menu">
+          <li><a href="#">Action</a></li>
+          <li><a href="#">Adventure</a></li>
+          <li><a href="#">Comedy</a></li>
+          <li><a href="#">Drama</a></li>
+          <li><a href="#">Fantasy</a></li>
+          <li><a href="#">Horror</a></li>
+          <li><a href="#">Sci-Fi</a></li>
+        </ul>
+      </li>
+
+      <li><a href="#">❤️ Watchlist</a></li>
+      <li><button class="theme-btn">🌙</button></li>
+    </ul>
+  </nav>
+</header>
+<main>
+
+    <section class="hero">
+        <!-- Banner -->
+    </section>
+
+    <section class="movies">
+
+        <h2>Trending Movies</h2>
+
+        <div class="movie-grid">
+
+        </div>
+
+    </section>
+
+</main>
     <script type="module" src="./src/js/main.js"></script>
 
 </body>
