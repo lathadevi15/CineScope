@@ -3,8 +3,9 @@
 import { IMAGE_BASE_URL } from "../config.js";
 
 export function renderMovieCard(movie) {
-  const card = document.createElement("div");
+  const card = document.createElement("a");
   card.className = "movie-card";
+  card.href = `movie-details.html?id=${movie.id}`;
 
   const posterUrl = movie.poster_path
     ? `${IMAGE_BASE_URL}${movie.poster_path}`
