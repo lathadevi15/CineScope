@@ -7,14 +7,9 @@ export async function fetchTrendingMovies() {
 
   try {
     const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`TMDB API error: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
     const data = await response.json();
     return data.results;
-
   } catch (error) {
     console.error("Failed to fetch trending movies:", error);
     throw error;
@@ -26,16 +21,25 @@ export async function fetchMovieDetails(movieId) {
 
   try {
     const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`TMDB API error: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
     const data = await response.json();
     return data;
-
   } catch (error) {
     console.error("Failed to fetch movie details:", error);
+    throw error;
+  }
+}
+
+export async function searchMovies(query) {
+  const url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Failed to search movies:", error);
     throw error;
   }
 }
