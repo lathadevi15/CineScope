@@ -1,6 +1,8 @@
 // src/js/ui/renderDetails.js
 
 import { IMAGE_BASE_URL, BACKDROP_BASE_URL, PROFILE_BASE_URL } from "../config.js";
+import { addToWishlist, removeFromWishlist, isInWishlist } from "../utils/storage.js";
+import { updateWishlistBadge } from "./wishlistBadge.js";
 
 function formatRuntime(minutes) {
   if (!minutes) return "N/A";
@@ -11,12 +13,8 @@ function formatRuntime(minutes) {
 
 function formatCurrency(amount) {
   if (!amount) return "N/A";
-  if (amount >= 1_000_000_000) {
-    return `$${(amount / 1_000_000_000).toFixed(3)} billion`;
-  }
-  if (amount >= 1_000_000) {
-    return `$${Math.round(amount / 1_000_000)} million`;
-  }
+  if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(3)} billion`;
+  if (amount >= 1_000_000) return `$${Math.round(amount / 1_000_000)} million`;
   return `$${amount.toLocaleString()}`;
 }
 
@@ -30,21 +28,11 @@ export function renderMovieDetailsPage(movie, container) {
     ? `${IMAGE_BASE_URL}${movie.poster_path}`
     : "https://via.placeholder.com/500x750?text=No+Image";
 
-  const backdropUrl = movie.backdrop_path
-    ? `${BACKDROP_BASE_URL}${movie.backdrop_path}`
-    : "";
-
+  const backdropUrl = movie.backdrop_path ? `${BACKDROP_BASE_URL}${movie.backdrop_path}` : "";
   const year = movie.release_date ? movie.release_date.slice(0, 4) : "N/A";
-
-  const genresHtml = movie.genres
-    .map((genre) => `<span class="genre-pill">${genre.name}</span>`)
-    .join("");
-
+  const genresHtml = movie.genres.map((genre) => `<span class="genre-pill">${genre.name}</span>`).join("");
   const director = getDirector(movie.credits.crew);
-
-  const trailer = movie.videos.results.find(
-    (video) => video.type === "Trailer" && video.site === "YouTube"
-  );
+  const trailer = movie.videos.results.find((v) => v.type === "Trailer" && v.site === "YouTube");
 
   const castHtml = movie.credits.cast
     .slice(0, 10)
@@ -52,7 +40,6 @@ export function renderMovieDetailsPage(movie, container) {
       const photo = actor.profile_path
         ? `${PROFILE_BASE_URL}${actor.profile_path}`
         : "https://via.placeholder.com/185x185?text=No+Photo";
-
       return `
         <div class="cast-card">
           <img src="${photo}" alt="${actor.name}" />
@@ -69,10 +56,7 @@ export function renderMovieDetailsPage(movie, container) {
       const similarPoster = similarMovie.poster_path
         ? `${IMAGE_BASE_URL}${similarMovie.poster_path}`
         : "https://via.placeholder.com/500x750?text=No+Image";
-      const similarYear = similarMovie.release_date
-        ? similarMovie.release_date.slice(0, 4)
-        : "N/A";
-
+      const similarYear = similarMovie.release_date ? similarMovie.release_date.slice(0, 4) : "N/A";
       return `
         <a class="similar-card" href="movie-details.html?id=${similarMovie.id}">
           <img src="${similarPoster}" alt="${similarMovie.title}" />
@@ -88,18 +72,15 @@ export function renderMovieDetailsPage(movie, container) {
       <div class="details-hero-overlay"></div>
       <div class="details-hero-content">
         <img class="details-poster" src="${posterUrl}" alt="${movie.title}" />
-
         <div class="details-info">
           <h1>${movie.title} <span class="details-rating">⭐ ${movie.vote_average.toFixed(1)}</span></h1>
           <p class="details-meta">${year} · ${formatRuntime(movie.runtime)}</p>
-
           <div class="genre-list">${genresHtml}</div>
-
           <p class="details-overview">${movie.overview}</p>
 
           <div class="details-actions">
             <button class="btn-trailer">▶ Watch Trailer</button>
-            <button class="btn-watchlist">🔖 Add to Watchlist</button>
+            <button class="btn-watchlist" data-id="${movie.id}">🔖 Add to Watchlist</button>
           </div>
 
           <div class="details-grid">
@@ -121,11 +102,9 @@ export function renderMovieDetailsPage(movie, container) {
 
     <section class="details-section" id="trailer-section">
       <h2>Trailer</h2>
-      ${
-        trailer
-          ? `<iframe width="100%" height="450" src="https://www.youtube.com/embed/${trailer.key}" title="${movie.title} trailer" frameborder="0" allowfullscreen></iframe>`
-          : `<p>No trailer available.</p>`
-      }
+      ${trailer
+        ? `<iframe width="100%" height="450" src="https://www.youtube.com/embed/${trailer.key}" title="${movie.title} trailer" frameborder="0" allowfullscreen></iframe>`
+        : `<p>No trailer available.</p>`}
     </section>
 
     <section class="details-section">
@@ -136,5 +115,40 @@ export function renderMovieDetailsPage(movie, container) {
 
   container.querySelector(".btn-trailer").addEventListener("click", () => {
     document.querySelector("#trailer-section").scrollIntoView({ behavior: "smooth" });
+  });
+
+  setupWatchlistButton(movie);
+}
+
+function setupWatchlistButton(movie) {
+  const btn = document.querySelector(".btn-watchlist");
+
+  function refreshButtonState() {
+    if (isInWishlist(movie.id)) {
+      btn.textContent = "✓ In Watchlist";
+      btn.classList.add("active");
+    } else {
+      btn.textContent = "🔖 Add to Watchlist";
+      btn.classList.remove("active");
+    }
+  }
+
+  refreshButtonState();
+
+  btn.addEventListener("click", () => {
+    if (isInWishlist(movie.id)) {
+      removeFromWishlist(movie.id);
+    } else {
+      addToWishlist({
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+        genres: movie.genres.map((g) => g.name)
+      });
+    }
+    refreshButtonState();
+    updateWishlistBadge();
   });
 }

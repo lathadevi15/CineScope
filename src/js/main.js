@@ -3,6 +3,7 @@
 import { fetchTrendingMovies } from "./api.js";
 import { renderMovieList } from "./ui/renderMovies.js";
 import { initSearch } from "./ui/search.js";
+import { updateWishlistBadge } from "./ui/wishlistBadge.js";
 
 const movieGrid = document.querySelector(".movie-grid");
 
@@ -17,4 +18,5 @@ async function loadTrendingMovies() {
 }
 
 initSearch();
+updateWishlistBadge();
 loadTrendingMovies();

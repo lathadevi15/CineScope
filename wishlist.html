@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineScope - My Wishlist</title>
+    <link rel="stylesheet" href="./src/css/style.css">
+    <link rel="stylesheet" href="./src/css/wishlist.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">🎬 <span>CineScope</span></div>
+        <div class="search-box">
+            <input type="text" placeholder="Search movies..." />
+            <button>🔍</button>
+            <div class="search-results"></div>
+        </div>
+        <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#">Movies</a></li>
+                <li><a href="#">TV Shows</a></li>
+                <li><a href="#">Trending</a></li>
+                <li><a href="wishlist.html" class="wishlist-link active">❤️ Watchlist <span class="wishlist-count">0</span></a></li>
+                <li><button class="theme-btn">🌙</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="wishlist-header">
+            <div class="wishlist-title">
+                <h1>❤️ My Wishlist <span class="wishlist-count-pill">0</span></h1>
+                <p>Movies you want to watch later</p>
+            </div>
+
+            <div class="wishlist-controls">
+                <select class="sort-select">
+                    <option value="added">Sort by: Recently Added</option>
+                    <option value="rating">Sort by: Rating</option>
+                    <option value="title">Sort by: Title A-Z</option>
+                    <option value="year">Sort by: Newest Year</option>
+                </select>
+
+                <select class="filter-select">
+                    <option value="all">All Genres</option>
+                </select>
+
+                <button class="btn-clear-wishlist">🗑 Clear Wishlist</button>
+            </div>
+        </section>
+
+        <section class="wishlist-grid"></section>
+
+        <section class="wishlist-footer"></section>
+    </main>
+
+    <script type="module" src="./src/js/wishlist.js"></script>
+</body>
+</html>

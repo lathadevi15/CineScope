@@ -450,3 +450,19 @@ body{
   text-decoration: none;
   color: inherit;
 }
+
+.btn-watchlist.active {
+  background: #7b3ff2;
+  border-color: #7b3ff2;
+  color: #fff;
+}
+
+.wishlist-count {
+  background: #e6295c;
+  color: #fff;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+  display: none;
+}
