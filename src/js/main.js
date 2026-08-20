@@ -1,5 +1,4 @@
-// src/js/main.js
-
+import { loadHeader } from "./utils/loadHeader.js";
 import { fetchTrendingMovies } from "./api.js";
 import { renderMovieList } from "./ui/renderMovies.js";
 import { initSearch } from "./ui/search.js";
@@ -17,6 +16,11 @@ async function loadTrendingMovies() {
   }
 }
 
-initSearch();
-updateWishlistBadge();
-loadTrendingMovies();
+async function init() {
+  await loadHeader();
+  initSearch();
+  updateWishlistBadge();
+  loadTrendingMovies();
+}
+
+init();

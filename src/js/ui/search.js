@@ -4,10 +4,18 @@ import { searchMovies } from "../api.js";
 import { debounce } from "../utils/debounce.js";
 import { IMAGE_BASE_URL } from "../config.js";
 
-const searchInput = document.querySelector(".search-box input");
-const searchResults = document.querySelector(".search-results");
+let searchInput;
+let searchResults;
 
 export function initSearch() {
+  searchInput = document.querySelector(".search-box input");
+  searchResults = document.querySelector(".search-results");
+
+  if (!searchInput || !searchResults) {
+    console.error("Search elements not found in DOM.");
+    return;
+  }
+
   const debouncedSearch = debounce(handleInput, 400);
   searchInput.addEventListener("input", debouncedSearch);
 
