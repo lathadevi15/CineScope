@@ -40,12 +40,13 @@ export function renderMovieDetailsPage(movie, container) {
       const photo = actor.profile_path
         ? `${PROFILE_BASE_URL}${actor.profile_path}`
         : "https://via.placeholder.com/185x185?text=No+Photo";
+
       return `
-        <div class="cast-card">
+        <a class="cast-card" href="person.html?id=${actor.id}">
           <img src="${photo}" alt="${actor.name}" />
           <p class="cast-name">${actor.name}</p>
           <p class="cast-character">${actor.character}</p>
-        </div>
+        </a>
       `;
     })
     .join("");

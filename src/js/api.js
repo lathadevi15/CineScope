@@ -43,3 +43,18 @@ export async function searchMovies(query) {
     throw error;
   }
 }
+
+
+export async function fetchPersonDetails(personId) {
+  const url = `${BASE_URL}/person/${personId}?api_key=${API_KEY}&append_to_response=combined_credits,images,external_ids`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch person details:", error);
+    throw error;
+  }
+}

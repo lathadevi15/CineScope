@@ -1,0 +1,297 @@
+.person-hero {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 5%;
+}
+
+.person-photo {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.person-badge {
+  display: inline-block;
+  background: rgba(230, 41, 92, 0.15);
+  color: #e6295c;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.person-main h1 {
+  color: #fff;
+  font-size: 30px;
+  margin: 0 0 8px;
+}
+
+.person-meta {
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.person-main h2 {
+  color: #fff;
+  font-size: 18px;
+  margin: 20px 0 10px;
+}
+
+.person-bio {
+  color: #ccc;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.btn-read-more {
+  background: #1c2536;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-link {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #1c2536;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.person-info-panel {
+  background: #131c2e;
+  border-radius: 10px;
+  padding: 20px;
+  height: fit-content;
+}
+
+.person-info-panel h3 {
+  color: #fff;
+  font-size: 16px;
+  margin: 0 0 16px;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.info-label {
+  color: #777;
+  font-size: 12px;
+}
+
+.info-value {
+  color: #eee;
+  font-size: 14px;
+}
+
+.info-empty {
+  color: #777;
+  font-size: 13px;
+}
+
+.person-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 5%;
+}
+
+.person-section h2 {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.known-for-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.known-for-card {
+  flex: 0 0 160px;
+  text-decoration: none;
+  color: #fff;
+  position: relative;
+}
+
+.known-for-card img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.known-for-rating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.75);
+  color: #ffcc00;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.known-for-title {
+  font-size: 13px;
+  margin: 0;
+}
+
+.known-for-year {
+  font-size: 12px;
+  color: #999;
+  margin: 2px 0 0;
+}
+
+.person-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5% 40px;
+}
+
+.credits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.credits-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  background: #131c2e;
+  color: #999;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #e6295c;
+  color: #fff;
+}
+
+.credits-list {
+  background: #131c2e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.credit-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  text-decoration: none;
+  border-bottom: 1px solid #1e2a40;
+}
+
+.credit-row:last-child {
+  border-bottom: none;
+}
+
+.credit-row:hover {
+  background: #1a2538;
+}
+
+.credit-row img {
+  width: 44px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.credit-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.credit-title {
+  color: #fff;
+  font-size: 14px;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.credit-character {
+  color: #888;
+  font-size: 12px;
+  margin: 0;
+}
+
+.credit-year {
+  color: #aaa;
+  font-size: 13px;
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.credit-rating {
+  color: #ffcc00;
+  font-size: 13px;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.credit-arrow {
+  color: #555;
+  font-size: 18px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.gallery-grid img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .person-hero {
+    grid-template-columns: 1fr;
+  }
+  .person-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
