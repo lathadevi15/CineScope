@@ -4,13 +4,38 @@
   <nav class="navbar">
     <ul class="nav-links">
       <li><a href="index.html" data-page="home">Home</a></li>
-      <li><a href="#" data-page="movies">Movies</a></li>
-      <li><a href="#" data-page="tvshows">TV Shows</a></li>
-      <li><a href="trending.html" data-page="trending">Trending</a></li>
-      <li><a href="#" data-page="toprated">Top Rated</a></li>
-      <li><a href="#" data-page="upcoming">Upcoming</a></li>
+          <li class="dropdown">
+  <a href="#">Movies ▾</a>
+  <ul class="dropdown-menu">
+    <li><a href="movies-list.html?category=popular">Popular</a></li>
+    <li><a href="movies-list.html?category=trending">Trending</a></li>
+    <li><a href="movies-list.html?category=top_rated">Top Rated</a></li>
+    <li><a href="movies-list.html?category=now_playing">Now Playing</a></li>
+    <li><a href="movies-list.html?category=upcoming">Upcoming</a></li>
+  </ul>
+</li>
       <li class="dropdown">
-        <a href="#">Genres ▼</a>
+      <a href="#">TV Shows </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Popular</a></li>
+          <li><a href="#">Airing Today</a></li>
+          <li><a href="#">Top rated</a></li>
+          <li><a href="#">On TV</a></li>
+        </ul>
+      </li>
+      <li class="dropdown">
+       <a href="#">People </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Popular</a></li>
+          <li><a href="#">Actors</a></li>
+          <li><a href="#">Actresses</a></li>
+          <li><a href="#">Directors</a></li>
+          <li><a href="#">Music Composers</a></li>
+        </ul>
+      </li>
+       
+      <li class="dropdown">
+        <a href="#">Genres </a>
         <ul class="dropdown-menu">
           <li><a href="#">Action</a></li>
           <li><a href="#">Adventure</a></li>
@@ -19,6 +44,18 @@
           <li><a href="#">Fantasy</a></li>
           <li><a href="#">Horror</a></li>
           <li><a href="#">Sci-Fi</a></li>
+        </ul>
+      </li>
+
+       <li class="dropdown">
+        <a href="#">Languages </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Telugu</a></li>
+          <li><a href="#">Hindi</a></li>
+          <li><a href="#">Tamil</a></li>
+          <li><a href="#">Malayalam</a></li>
+          <li><a href="#">Kannada</a></li>
+          <li><a href="#">English</a></li>
         </ul>
       </li>
     </ul>

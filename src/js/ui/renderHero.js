@@ -116,16 +116,11 @@ function slideMarkup(slide) {
     </div>
   `;
 }
-
 function renderCarousel(slides, container) {
   const realCount = slides.length;
-
-  // Clone last slide at the front, and first slide at the back.
-  // This lets the track keep sliding in one direction forever,
-  // instead of snapping backward when it loops.
   const extended = [slides[realCount - 1], ...slides, slides[0]];
+  const totalSlides = extended.length;
 
-  // Start on index 1 — the first REAL slide (index 0 is the cloned last slide).
   let currentIndex = 1;
   let autoplayTimer = null;
   let isJumping = false;
@@ -147,20 +142,27 @@ function renderCarousel(slides, container) {
   const track = container.querySelector(".hero-track");
   const dots = container.querySelectorAll(".hero-dot");
 
+  // Safety net: no matter how currentIndex got out of range,
+  // pull it back into a valid position within the extended array.
+  function clampIndex(index) {
+    if (index < 0) return totalSlides - 2; // wrap to last real slide's clone-adjacent position
+    if (index > totalSlides - 1) return 1;
+    return index;
+  }
+
   function setTrackPosition(withTransition) {
     track.style.transition = withTransition ? `transform ${TRANSITION_MS}ms ease` : "none";
     track.style.transform = `translateX(-${currentIndex * 100}%)`;
   }
 
   function updateDots() {
-    // Map the extended index back to a real slide index for the dots.
     const realIndex = (currentIndex - 1 + realCount) % realCount;
     dots.forEach((dot, i) => dot.classList.toggle("active", i === realIndex));
   }
 
   function goTo(index, withTransition = true) {
     if (isJumping) return;
-    currentIndex = index;
+    currentIndex = clampIndex(index);
     setTrackPosition(withTransition);
     updateDots();
   }
@@ -173,15 +175,11 @@ function renderCarousel(slides, container) {
     goTo(currentIndex - 1);
   }
 
-  // After a real transition finishes, check if we landed on a clone.
-  // If so, silently (no animation) jump to the matching real slide.
   track.addEventListener("transitionend", () => {
-    if (currentIndex === extended.length - 1) {
+    if (currentIndex === totalSlides - 1) {
       isJumping = true;
       currentIndex = 1;
       setTrackPosition(false);
-      // Force the browser to apply the "no transition" jump before
-      // re-enabling transitions on the next frame.
       requestAnimationFrame(() => { isJumping = false; });
     } else if (currentIndex === 0) {
       isJumping = true;
@@ -192,37 +190,52 @@ function renderCarousel(slides, container) {
   });
 
   function startAutoplay() {
+    stopAutoplay(); // avoid ever stacking multiple intervals
     autoplayTimer = setInterval(nextSlide, AUTOPLAY_DELAY);
   }
 
   function stopAutoplay() {
     clearInterval(autoplayTimer);
+    autoplayTimer = null;
   }
 
   dots.forEach((dot) => {
     dot.addEventListener("click", () => {
       goTo(Number(dot.dataset.index) + 1);
-      stopAutoplay();
       startAutoplay();
     });
   });
 
   container.querySelector(".hero-arrow-left").addEventListener("click", () => {
     prevSlide();
-    stopAutoplay();
     startAutoplay();
   });
 
   container.querySelector(".hero-arrow-right").addEventListener("click", () => {
     nextSlide();
-    stopAutoplay();
     startAutoplay();
   });
 
   container.addEventListener("mouseenter", stopAutoplay);
   container.addEventListener("mouseleave", startAutoplay);
 
-  // Set initial position with no transition (so it doesn't slide in from off-screen on load).
+  // Pause the carousel entirely while the tab is hidden — no point
+  // animating something nobody can see, and this is what prevents
+  // currentIndex from drifting out of range while backgrounded.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopAutoplay();
+    } else {
+      // Re-sync the track position with no animation, in case any
+      // drift happened, then resume autoplay from a clean state.
+      isJumping = false;
+      currentIndex = clampIndex(currentIndex);
+      setTrackPosition(false);
+      updateDots();
+      startAutoplay();
+    }
+  });
+
   setTrackPosition(false);
   startAutoplay();
 }

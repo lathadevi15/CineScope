@@ -21,13 +21,13 @@ const movieRowWrapper = document.querySelector(".movie-row-wrapper");
 const rowsContainer = document.querySelector(".movie-rows-container");
 
 const ADDITIONAL_ROWS = [
-  { id: "top-rated", title: "Top Rated Movies", fetchFn: fetchTopRatedMovies },
-  { id: "telugu", title: "Telugu Movies", fetchFn: () => discoverMoviesByLanguage("te") },
-  { id: "tamil", title: "Tamil Movies", fetchFn: () => discoverMoviesByLanguage("ta") },
-  { id: "hindi", title: "Hindi Movies", fetchFn: () => discoverMoviesByLanguage("hi") },
-  { id: "malayalam", title: "Malayalam Movies", fetchFn: () => discoverMoviesByLanguage("ml") },
-  { id: "kannada", title: "Kannada Movies", fetchFn: () => discoverMoviesByLanguage("kn") },
-  { id: "upcoming", title: "Upcoming Movies", fetchFn: fetchUpcomingMovies },
+  { id: "top-rated", title: "Top Rated ", fetchFn: fetchTopRatedMovies },
+  { id: "telugu", title: "Telugu ", fetchFn: () => discoverMoviesByLanguage("te") },
+  { id: "tamil", title: "Tamil ", fetchFn: () => discoverMoviesByLanguage("ta") },
+  { id: "hindi", title: "Hindi ", fetchFn: () => discoverMoviesByLanguage("hi") },
+  { id: "malayalam", title: "Malayalam ", fetchFn: () => discoverMoviesByLanguage("ml") },
+  { id: "kannada", title: "Kannada ", fetchFn: () => discoverMoviesByLanguage("kn") },
+  { id: "upcoming", title: "Upcoming ", fetchFn: fetchUpcomingMovies },
   {
     id: "watchlist",
     title: "Your Watchlist",
