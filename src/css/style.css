@@ -558,7 +558,11 @@ body{
   }
 }
 
-
+.list-subtitle {
+  color: #999;
+  font-size: 13px;
+  margin: -12px 0 20px;
+}
 
 .movies {
   margin-bottom: 10px;

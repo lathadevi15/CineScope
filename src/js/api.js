@@ -65,6 +65,67 @@ export async function discoverMoviesByLanguage(languageCode) {
   );
 }
 
+function buildIndianTVUrl(category, page) {
+  const base = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=IN&page=${page}`;
+
+  switch (category) {
+    case "popular":
+      return `${base}&sort_by=popularity.desc`;
+    case "top_rated":
+      return `${base}&sort_by=vote_average.desc&vote_count.gte=50`;
+    case "on_tv":
+      return `${base}&sort_by=popularity.desc&with_status=0`;
+    default:
+      return null;
+  }
+}
+
+export async function fetchTVByCategory(category, page = 1) {
+  // Airing Today has no country filter on TMDB's side, so we fetch the
+  // global list and filter down to Indian-origin shows ourselves.
+  if (category === "airing_today") {
+    const url = `${BASE_URL}/tv/airing_today?api_key=${API_KEY}&page=${page}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+      const data = await response.json();
+
+      const indianOnly = data.results.filter(
+        (show) => show.origin_country && show.origin_country.includes("IN")
+      );
+
+      return {
+        results: indianOnly,
+        page: data.page,
+        totalPages: data.total_pages
+      };
+    } catch (error) {
+      console.error("Failed to fetch airing today TV shows:", error);
+      throw error;
+    }
+  }
+
+  // Popular, Top Rated, On TV — TMDB filters these by origin country for us.
+  const url = buildIndianTVUrl(category, page);
+  if (!url) throw new Error(`Unknown TV category: ${category}`);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    const data = await response.json();
+
+    return {
+      results: data.results,
+      page: data.page,
+      totalPages: data.total_pages
+    };
+  } catch (error) {
+    console.error(`Failed to fetch ${category} TV shows:`, error);
+    throw error;
+  }
+}
+
 export async function searchMovies(query) {
   return fetchList(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
 }
