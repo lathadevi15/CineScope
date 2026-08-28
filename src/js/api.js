@@ -126,6 +126,19 @@ export async function fetchTVByCategory(category, page = 1) {
   }
 }
 
+export async function fetchTVDetails(tvId) {
+  const url = `${BASE_URL}/tv/${tvId}?api_key=${API_KEY}&append_to_response=credits,videos,similar`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch TV details:", error);
+    throw error;
+  }
+}
+
 export async function searchMovies(query) {
   return fetchList(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
 }
@@ -203,5 +216,106 @@ export async function fetchTVBasic(tvId) {
   } catch (error) {
     console.error("Failed to fetch TV basic details:", error);
     throw error;
+  }
+}
+
+
+
+
+
+const INDIAN_LANGUAGES_FOR_PEOPLE = ["te", "hi", "ta", "kn", "ml"];
+
+async function fetchIndianTitlePool() {
+  const moviePromises = INDIAN_LANGUAGES_FOR_PEOPLE.map((lang) =>
+    fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&with_original_language=${lang}&page=1`)
+      .then((res) => (res.ok ? res.json() : { results: [] }))
+      .then((data) => data.results.slice(0, 8).map((m) => ({ id: m.id, type: "movie" })))
+      .catch(() => [])
+  );
+
+  const tvPromise = fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&with_origin_country=IN&page=1`)
+    .then((res) => (res.ok ? res.json() : { results: [] }))
+    .then((data) => data.results.slice(0, 10).map((t) => ({ id: t.id, type: "tv" })))
+    .catch(() => []);
+
+  const movieGroups = await Promise.all(moviePromises);
+  const tvGroup = await tvPromise;
+
+  return [...movieGroups.flat(), ...tvGroup];
+}
+
+async function fetchTitleCredits(titleRef) {
+  const endpoint = titleRef.type === "movie" ? "movie" : "tv";
+  const url = `${BASE_URL}/${endpoint}/${titleRef.id}/credits?api_key=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return { cast: [], crew: [] };
+    return await response.json();
+  } catch {
+    return { cast: [], crew: [] };
+  }
+}
+
+export async function buildIndianPeoplePool() {
+  const titlePool = await fetchIndianTitlePool();
+  const creditsList = await Promise.all(titlePool.map(fetchTitleCredits));
+
+  const peopleMap = new Map();
+
+  creditsList.forEach((credits) => {
+    (credits.cast || []).slice(0, 8).forEach((actor) => {
+      if (!peopleMap.has(actor.id)) {
+        peopleMap.set(actor.id, {
+          id: actor.id,
+          name: actor.name,
+          profile_path: actor.profile_path,
+          gender: actor.gender,
+          popularity: actor.popularity || 0,
+          roles: new Set(["Acting"])
+        });
+      } else {
+        peopleMap.get(actor.id).roles.add("Acting");
+      }
+    });
+
+    (credits.crew || []).forEach((member) => {
+      const isDirector = member.job === "Director";
+      const isSound = member.department === "Sound";
+      if (!isDirector && !isSound) return;
+
+      const role = isDirector ? "Directing" : "Sound";
+
+      if (!peopleMap.has(member.id)) {
+        peopleMap.set(member.id, {
+          id: member.id,
+          name: member.name,
+          profile_path: member.profile_path,
+          gender: member.gender,
+          popularity: member.popularity || 0,
+          roles: new Set([role])
+        });
+      } else {
+        peopleMap.get(member.id).roles.add(role);
+      }
+    });
+  });
+
+  return Array.from(peopleMap.values()).sort((a, b) => b.popularity - a.popularity);
+}
+
+export function filterPeoplePool(pool, category) {
+  switch (category) {
+    case "actors":
+      return pool.filter((p) => p.roles.has("Acting") && p.gender === 2);
+    case "actresses":
+      return pool.filter((p) => p.roles.has("Acting") && p.gender === 1);
+    case "directors":
+      return pool.filter((p) => p.roles.has("Directing"));
+    case "composers":
+      return pool.filter((p) => p.roles.has("Sound"));
+    case "popular":
+    default:
+      return pool;
   }
 }

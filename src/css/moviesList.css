@@ -69,3 +69,50 @@
     position: static;
   }
 }
+
+.person-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+}
+
+.person-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: #1c1c1c;
+  border-radius: 8px;
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.person-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.person-card h3 {
+  color: #fff;
+  font-size: 14px;
+  margin: 8px 8px 2px;
+}
+
+.person-department {
+  color: #7b3ff2;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 8px;
+}
+
+.person-known-for {
+  color: #999;
+  font-size: 12px;
+  margin: 4px 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
