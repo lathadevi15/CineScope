@@ -347,3 +347,22 @@ export async function buildIndianMoviesByGenrePool(genreId) {
 
   return Array.from(uniqueMap.values()).sort((a, b) => b.popularity - a.popularity);
 }
+
+export async function fetchMoviesByLanguage(languageCode, page = 1) {
+  const url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_original_language=${languageCode}&sort_by=popularity.desc&page=${page}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    const data = await response.json();
+
+    return {
+      results: data.results,
+      page: data.page,
+      totalPages: data.total_pages
+    };
+  } catch (error) {
+    console.error(`Failed to fetch ${languageCode} movies:`, error);
+    throw error;
+  }
+}
