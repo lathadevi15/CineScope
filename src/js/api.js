@@ -319,3 +319,31 @@ export function filterPeoplePool(pool, category) {
       return pool;
   }
 }
+
+const GENRE_LANGUAGES = ["te", "hi", "ta", "kn", "ml"];
+
+export async function buildIndianMoviesByGenrePool(genreId) {
+  // Two pages per language, across 5 languages = 10 concurrent requests.
+  // No single TMDB call supports "any of these 5 languages" at once,
+  // so we fetch them separately and merge — same pattern used for the People pool.
+  const requests = GENRE_LANGUAGES.flatMap((lang) =>
+    [1, 2].map((page) =>
+      fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&with_original_language=${lang}&sort_by=popularity.desc&page=${page}`)
+        .then((res) => (res.ok ? res.json() : { results: [] }))
+        .then((data) => data.results)
+        .catch(() => [])
+    )
+  );
+
+  const resultGroups = await Promise.all(requests);
+  const merged = resultGroups.flat();
+
+  const uniqueMap = new Map();
+  merged.forEach((movie) => {
+    if (!uniqueMap.has(movie.id)) {
+      uniqueMap.set(movie.id, movie);
+    }
+  });
+
+  return Array.from(uniqueMap.values()).sort((a, b) => b.popularity - a.popularity);
+}
