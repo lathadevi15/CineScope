@@ -17,36 +17,58 @@ async function fetchList(url) {
 }
 
 
-const CATEGORY_ENDPOINTS = {
-  popular: `${BASE_URL}/movie/popular`,
-  trending: `${BASE_URL}/trending/movie/week`,
-  top_rated: `${BASE_URL}/movie/top_rated`,
-  now_playing: `${BASE_URL}/movie/now_playing`,
-  upcoming: `${BASE_URL}/movie/upcoming`
-};
+const CATEGORY_LANGUAGES = ["te", "hi", "ta", "kn", "ml"];
 
-export async function fetchMoviesByCategory(category, page = 1) {
-  const endpoint = CATEGORY_ENDPOINTS[category];
-  if (!endpoint) throw new Error(`Unknown category: ${category}`);
+function buildCategoryDiscoverUrl(category, lang, page) {
+  const base = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_original_language=${lang}&page=${page}`;
+  const today = new Date().toISOString().slice(0, 10);
+  const sixWeeksAgo = new Date(Date.now() - 42 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const url = `${endpoint}?api_key=${API_KEY}&page=${page}`;
+  switch (category) {
+    case "popular":
+      return `${base}&sort_by=popularity.desc`;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
-    const data = await response.json();
+    case "trending":
+      // TMDB's real trending algorithm isn't language-filterable, so we
+      // approximate it as recently-released Indian movies by popularity.
+      return `${base}&sort_by=popularity.desc&primary_release_date.gte=${sixWeeksAgo}&primary_release_date.lte=${today}`;
 
-    return {
-      results: data.results,
-      page: data.page,
-      totalPages: data.total_pages
-    };
-  } catch (error) {
-    console.error(`Failed to fetch ${category} movies:`, error);
-    throw error;
+    case "top_rated":
+      return `${base}&sort_by=vote_average.desc&vote_count.gte=100`;
+
+    case "now_playing":
+      return `${base}&sort_by=popularity.desc&primary_release_date.gte=${sixWeeksAgo}&primary_release_date.lte=${today}&with_release_type=2|3`;
+
+    case "upcoming":
+      return `${base}&sort_by=popularity.desc&primary_release_date.gte=${today}`;
+
+    default:
+      return `${base}&sort_by=popularity.desc`;
   }
 }
 
+export async function buildIndianMoviesByCategoryPool(category) {
+  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
+    [1, 2].map((page) =>
+      fetch(buildCategoryDiscoverUrl(category, lang, page))
+        .then((res) => (res.ok ? res.json() : { results: [] }))
+        .then((data) => data.results)
+        .catch(() => [])
+    )
+  );
+
+  const resultGroups = await Promise.all(requests);
+  const merged = resultGroups.flat();
+
+  const uniqueMap = new Map();
+  merged.forEach((movie) => {
+    if (!uniqueMap.has(movie.id)) {
+      uniqueMap.set(movie.id, movie);
+    }
+  });
+
+  return Array.from(uniqueMap.values());
+}
 export async function fetchTrendingMovies() {
   return fetchList(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
 }
