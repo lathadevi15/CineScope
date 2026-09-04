@@ -47,28 +47,6 @@ function buildCategoryDiscoverUrl(category, lang, page) {
   }
 }
 
-export async function buildIndianMoviesByCategoryPool(category) {
-  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
-    [1, 2].map((page) =>
-      fetch(buildCategoryDiscoverUrl(category, lang, page))
-        .then((res) => (res.ok ? res.json() : { results: [] }))
-        .then((data) => data.results)
-        .catch(() => [])
-    )
-  );
-
-  const resultGroups = await Promise.all(requests);
-  const merged = resultGroups.flat();
-
-  const uniqueMap = new Map();
-  merged.forEach((movie) => {
-    if (!uniqueMap.has(movie.id)) {
-      uniqueMap.set(movie.id, movie);
-    }
-  });
-
-  return Array.from(uniqueMap.values());
-}
 export async function fetchTrendingMovies() {
   return fetchList(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
 }
@@ -389,23 +367,68 @@ export async function fetchMoviesByLanguage(languageCode, page = 1) {
   }
 }
 
-export async function buildIndianMoviesByDateRange(fromDate, toDate) {
-  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
-    [1, 2, 3].map((page) => {
-      const params = new URLSearchParams({
-        api_key: API_KEY,
-        with_original_language: lang,
-        sort_by: "popularity.desc",
-        page: String(page)
-      });
-      if (fromDate) params.set("primary_release_date.gte", fromDate);
-      if (toDate) params.set("primary_release_date.lte", toDate);
+function buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }) {
+  const params = new URLSearchParams({
+    api_key: API_KEY,
+    with_original_language: lang,
+    page: String(page)
+  });
 
-      return fetch(`${BASE_URL}/discover/movie?${params.toString()}`)
+  const today = new Date().toISOString().slice(0, 10);
+  const sixWeeksAgo = new Date(Date.now() - 42 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  switch (category) {
+    case "trending":
+      params.set("sort_by", "popularity.desc");
+      params.set("primary_release_date.gte", sixWeeksAgo);
+      params.set("primary_release_date.lte", today);
+      break;
+    case "top_rated":
+      params.set("sort_by", "vote_average.desc");
+      params.set("vote_count.gte", "100");
+      break;
+    case "now_playing":
+      params.set("sort_by", "popularity.desc");
+      params.set("primary_release_date.gte", sixWeeksAgo);
+      params.set("primary_release_date.lte", today);
+      params.set("with_release_type", "2|3");
+      break;
+    case "upcoming":
+      params.set("sort_by", "popularity.desc");
+      params.set("primary_release_date.gte", today);
+      break;
+    case "popular":
+    default:
+      params.set("sort_by", "popularity.desc");
+  }
+
+  // A genre selection narrows within whatever category is active — it's
+  // a filter layered ON TOP of the category, not a replacement for it.
+  if (genreId) {
+    params.set("with_genres", String(genreId));
+  }
+
+  // An explicit user-picked date range overrides the category's own
+  // built-in date window (e.g. "Now Playing"'s automatic recent-weeks range).
+  if (fromDate || toDate) {
+    params.delete("with_release_type");
+    if (fromDate) params.set("primary_release_date.gte", fromDate);
+    else params.delete("primary_release_date.gte");
+    if (toDate) params.set("primary_release_date.lte", toDate);
+    else params.delete("primary_release_date.lte");
+  }
+
+  return `${BASE_URL}/discover/movie?${params.toString()}`;
+}
+
+export async function buildIndianMoviesPool({ category = "popular", genreId = null, fromDate = null, toDate = null } = {}) {
+  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
+    [1, 2, 3].map((page) =>
+      fetch(buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }))
         .then((res) => (res.ok ? res.json() : { results: [] }))
         .then((data) => data.results)
-        .catch(() => []);
-    })
+        .catch(() => [])
+    )
   );
 
   const resultGroups = await Promise.all(requests);

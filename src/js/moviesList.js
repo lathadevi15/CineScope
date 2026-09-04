@@ -1,7 +1,7 @@
 // src/js/moviesList.js
 
 import { loadHeader } from "./utils/loadHeader.js";
-import { buildIndianMoviesByCategoryPool, buildIndianMoviesByDateRange } from "./api.js";
+import { buildIndianMoviesPool } from "./api.js";
 import { renderMovieCard } from "./ui/renderMovies.js";
 import { initSearch } from "./ui/search.js";
 import { updateWishlistBadge } from "./ui/wishlistBadge.js";
@@ -27,16 +27,16 @@ const sortForm = document.querySelector(".filters-content form");
 const searchAllCheckbox = document.querySelector("#search-all-releases");
 const fromInput = document.querySelector("#release-from");
 const toInput = document.querySelector("#release-to");
+const genreContainer = document.querySelector(".genre-filter");
 
-let allMovies = [];      // the default category pool (popularity-based)
-let activeMovies = [];   // whichever pool is currently in effect — category pool, or a date-scoped fetch
+let activeMovies = [];
 let shownCount = 0;
 let currentSort = "popularity-descending";
-let dateRequestId = 0;   // guards against a slow, stale fetch overwriting a newer one
+let selectedGenreId = null;
+let requestId = 0; // guards against a slow, stale fetch overwriting a newer one
 
 function sortMovies(movies, sortBy) {
   const sorted = [...movies];
-
   switch (sortBy) {
     case "popularity-descending":
       return sorted.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
@@ -59,10 +59,7 @@ function renderVisible() {
   const sorted = sortMovies(activeMovies, currentSort);
   const visible = sorted.slice(0, shownCount);
 
-  grid.innerHTML = visible.length > 0
-    ? ""
-    : `<p class="status">No movies match this date range.</p>`;
-
+  grid.innerHTML = visible.length > 0 ? "" : `<p class="status">No movies match these filters.</p>`;
   visible.forEach((movie) => grid.appendChild(renderMovieCard(movie)));
 
   loadMoreWrapper.style.display = shownCount >= sorted.length ? "none" : "flex";
@@ -73,48 +70,39 @@ function showMore() {
   renderVisible();
 }
 
-function resetAndRender() {
-  shownCount = PAGE_SIZE;
-  renderVisible();
-}
+async function applyFilters() {
+  const thisRequestId = ++requestId;
 
-async function applyDateFilter() {
-  const from = fromInput.value;
-  const to = toInput.value;
+  const from = searchAllCheckbox.checked ? null : fromInput.value;
+  const to = searchAllCheckbox.checked ? null : toInput.value;
 
-  // "Search all releases" checked, or no dates chosen yet — just use the
-  // original category pool, no extra fetch needed.
-  if (searchAllCheckbox.checked || (!from && !to)) {
-    activeMovies = allMovies;
-    resetAndRender();
-    return;
-  }
-
-  const thisRequestId = ++dateRequestId;
-
-  grid.innerHTML = `<p class="status">Searching movies${from ? ` from ${from}` : ""}${to ? ` to ${to}` : ""}...</p>`;
+  grid.innerHTML = `<p class="status">Loading movies...</p>`;
   loadMoreWrapper.style.display = "none";
 
   try {
-    const pool = await buildIndianMoviesByDateRange(from, to);
+    const pool = await buildIndianMoviesPool({
+      category,
+      genreId: selectedGenreId,
+      fromDate: from,
+      toDate: to
+    });
 
-    // If the user changed the date again before this finished, ignore this
-    // now-stale result — only the most recent request should win.
-    if (thisRequestId !== dateRequestId) return;
+    if (thisRequestId !== requestId) return; // a newer request superseded this one
 
     activeMovies = pool;
+    shownCount = PAGE_SIZE;
 
     if (activeMovies.length === 0) {
-      grid.innerHTML = `<p class="status">No Indian movies found in this date range.</p>`;
-      loadMoreWrapper.style.display = "none";
+      grid.innerHTML = `<p class="status">No Indian movies match these filters right now.</p>`;
       return;
     }
 
-    resetAndRender();
+    renderVisible();
 
   } catch (error) {
-    if (thisRequestId !== dateRequestId) return;
-    grid.innerHTML = `<p class="status error">Failed to load movies for this date range.</p>`;
+    if (thisRequestId !== requestId) return;
+    console.error("Movie pool failed:", error);
+    grid.innerHTML = `<p class="status error">Failed to load movies.</p>`;
   }
 }
 
@@ -129,11 +117,32 @@ searchAllCheckbox.addEventListener("change", () => {
   const disabled = searchAllCheckbox.checked;
   fromInput.disabled = disabled;
   toInput.disabled = disabled;
-  applyDateFilter();
+  applyFilters();
 });
 
-fromInput.addEventListener("change", applyDateFilter);
-toInput.addEventListener("change", applyDateFilter);
+fromInput.addEventListener("change", applyFilters);
+toInput.addEventListener("change", applyFilters);
+
+// One listener on the container, not fifteen on each button — event delegation.
+genreContainer.addEventListener("click", (event) => {
+  const btn = event.target.closest(".genre-btn");
+  if (!btn) return;
+  btn.classList.toggle("selected");
+
+  const clickedId = btn.dataset.genreId;
+
+  // Clicking the already-active genre again clears the filter (toggle off).
+  if (selectedGenreId === clickedId) {
+    selectedGenreId = null;
+    btn.classList.remove("active");
+  } else {
+    genreContainer.querySelectorAll(".genre-btn").forEach((b) => b.classList.remove("active"));
+    selectedGenreId = clickedId;
+    btn.classList.add("active");
+  }
+
+  applyFilters();
+});
 
 async function init() {
   await loadHeader();
@@ -145,25 +154,7 @@ async function init() {
   const defaultRadio = document.querySelector(`#${currentSort}`);
   if (defaultRadio) defaultRadio.checked = true;
 
-  grid.innerHTML = `<p class="status">Loading ${CATEGORY_TITLES[category] || "movies"}...</p>`;
-
-  try {
-    allMovies = await buildIndianMoviesByCategoryPool(category);
-    activeMovies = allMovies;
-
-    if (allMovies.length === 0) {
-      grid.innerHTML = `<p class="status">No Indian movies found for this category right now.</p>`;
-      loadMoreWrapper.style.display = "none";
-      return;
-    }
-
-    resetAndRender();
-
-  } catch (error) {
-    console.error("Movie pool failed:", error);
-    grid.innerHTML = `<p class="status error">Failed to load movies.</p>`;
-    loadMoreWrapper.style.display = "none";
-  }
+  await applyFilters();
 }
 
 init();
