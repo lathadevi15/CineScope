@@ -1,7 +1,7 @@
 // src/js/moviesList.js
 
 import { loadHeader } from "./utils/loadHeader.js";
-import { buildIndianMoviesByCategoryPool } from "./api.js";
+import { buildIndianMoviesByCategoryPool, buildIndianMoviesByDateRange } from "./api.js";
 import { renderMovieCard } from "./ui/renderMovies.js";
 import { initSearch } from "./ui/search.js";
 import { updateWishlistBadge } from "./ui/wishlistBadge.js";
@@ -24,10 +24,15 @@ const grid = document.querySelector(".movie-grid-full");
 const loadMoreBtn = document.querySelector(".btn-load-more");
 const loadMoreWrapper = document.querySelector(".load-more-wrapper");
 const sortForm = document.querySelector(".filters-content form");
+const searchAllCheckbox = document.querySelector("#search-all-releases");
+const fromInput = document.querySelector("#release-from");
+const toInput = document.querySelector("#release-to");
 
-let allMovies = [];   // the full Indian-language pool for this category
+let allMovies = [];      // the default category pool (popularity-based)
+let activeMovies = [];   // whichever pool is currently in effect — category pool, or a date-scoped fetch
 let shownCount = 0;
 let currentSort = "popularity-descending";
+let dateRequestId = 0;   // guards against a slow, stale fetch overwriting a newer one
 
 function sortMovies(movies, sortBy) {
   const sorted = [...movies];
@@ -51,10 +56,13 @@ function sortMovies(movies, sortBy) {
 }
 
 function renderVisible() {
-  const sorted = sortMovies(allMovies, currentSort);
+  const sorted = sortMovies(activeMovies, currentSort);
   const visible = sorted.slice(0, shownCount);
 
-  grid.innerHTML = "";
+  grid.innerHTML = visible.length > 0
+    ? ""
+    : `<p class="status">No movies match this date range.</p>`;
+
   visible.forEach((movie) => grid.appendChild(renderMovieCard(movie)));
 
   loadMoreWrapper.style.display = shownCount >= sorted.length ? "none" : "flex";
@@ -65,12 +73,67 @@ function showMore() {
   renderVisible();
 }
 
+function resetAndRender() {
+  shownCount = PAGE_SIZE;
+  renderVisible();
+}
+
+async function applyDateFilter() {
+  const from = fromInput.value;
+  const to = toInput.value;
+
+  // "Search all releases" checked, or no dates chosen yet — just use the
+  // original category pool, no extra fetch needed.
+  if (searchAllCheckbox.checked || (!from && !to)) {
+    activeMovies = allMovies;
+    resetAndRender();
+    return;
+  }
+
+  const thisRequestId = ++dateRequestId;
+
+  grid.innerHTML = `<p class="status">Searching movies${from ? ` from ${from}` : ""}${to ? ` to ${to}` : ""}...</p>`;
+  loadMoreWrapper.style.display = "none";
+
+  try {
+    const pool = await buildIndianMoviesByDateRange(from, to);
+
+    // If the user changed the date again before this finished, ignore this
+    // now-stale result — only the most recent request should win.
+    if (thisRequestId !== dateRequestId) return;
+
+    activeMovies = pool;
+
+    if (activeMovies.length === 0) {
+      grid.innerHTML = `<p class="status">No Indian movies found in this date range.</p>`;
+      loadMoreWrapper.style.display = "none";
+      return;
+    }
+
+    resetAndRender();
+
+  } catch (error) {
+    if (thisRequestId !== dateRequestId) return;
+    grid.innerHTML = `<p class="status error">Failed to load movies for this date range.</p>`;
+  }
+}
+
 loadMoreBtn.addEventListener("click", showMore);
 
 sortForm.addEventListener("change", (event) => {
   currentSort = event.target.id;
-  renderVisible(); // re-sort what's already loaded — no new fetch needed
+  renderVisible();
 });
+
+searchAllCheckbox.addEventListener("change", () => {
+  const disabled = searchAllCheckbox.checked;
+  fromInput.disabled = disabled;
+  toInput.disabled = disabled;
+  applyDateFilter();
+});
+
+fromInput.addEventListener("change", applyDateFilter);
+toInput.addEventListener("change", applyDateFilter);
 
 async function init() {
   await loadHeader();
@@ -86,6 +149,7 @@ async function init() {
 
   try {
     allMovies = await buildIndianMoviesByCategoryPool(category);
+    activeMovies = allMovies;
 
     if (allMovies.length === 0) {
       grid.innerHTML = `<p class="status">No Indian movies found for this category right now.</p>`;
@@ -93,8 +157,7 @@ async function init() {
       return;
     }
 
-    shownCount = PAGE_SIZE;
-    renderVisible();
+    resetAndRender();
 
   } catch (error) {
     console.error("Movie pool failed:", error);

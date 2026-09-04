@@ -170,3 +170,43 @@
   color: #fff;
   font-weight: 600;
 }
+
+.release-date-filter {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #2a3346;
+}
+
+.release-date-filter h4 {
+  color: #fff;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.date-range-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.date-label {
+  color: #999;
+  font-size: 12px;
+}
+
+.date-range-fields input[type="date"] {
+  background: #1a2234;
+  border: 1px solid #2a3346;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color-scheme: dark;
+}
+
+.date-range-fields input[type="date"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

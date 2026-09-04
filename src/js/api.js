@@ -388,3 +388,33 @@ export async function fetchMoviesByLanguage(languageCode, page = 1) {
     throw error;
   }
 }
+
+export async function buildIndianMoviesByDateRange(fromDate, toDate) {
+  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
+    [1, 2, 3].map((page) => {
+      const params = new URLSearchParams({
+        api_key: API_KEY,
+        with_original_language: lang,
+        sort_by: "popularity.desc",
+        page: String(page)
+      });
+      if (fromDate) params.set("primary_release_date.gte", fromDate);
+      if (toDate) params.set("primary_release_date.lte", toDate);
+
+      return fetch(`${BASE_URL}/discover/movie?${params.toString()}`)
+        .then((res) => (res.ok ? res.json() : { results: [] }))
+        .then((data) => data.results)
+        .catch(() => []);
+    })
+  );
+
+  const resultGroups = await Promise.all(requests);
+  const merged = resultGroups.flat();
+
+  const uniqueMap = new Map();
+  merged.forEach((movie) => {
+    if (!uniqueMap.has(movie.id)) uniqueMap.set(movie.id, movie);
+  });
+
+  return Array.from(uniqueMap.values());
+}
