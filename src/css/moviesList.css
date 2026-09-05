@@ -12,8 +12,6 @@
   border-radius: 10px;
   padding: 20px;
   height: fit-content;
-  position: sticky;
-  top: 90px;
 }
 
 .filters-sidebar h3 {
@@ -225,4 +223,47 @@
 .genre-btn.selected {
   color: #000 !important;
   background-color: #fff;
+}
+
+.language-filter {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #2a3346;
+}
+
+.language-filter h4 {
+  color: #fff;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.language-filter select {
+  width: 100%;
+  background: #1a2234;
+  border: 1px solid #2a3346;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.language-filter select:hover {
+  border-color: #7b3ff2;
+}
+
+.language-filter select:focus {
+  outline: none;
+  border-color: #7b3ff2;
+}
+
+.language-filter select option {
+  background: #1a2234;
+  color: #fff;
 }

@@ -1,7 +1,7 @@
 // src/js/moviesList.js
 
 import { loadHeader } from "./utils/loadHeader.js";
-import { buildIndianMoviesPool } from "./api.js";
+import { buildIndianMoviesPool, fetchAllLanguages } from "./api.js";
 import { renderMovieCard } from "./ui/renderMovies.js";
 import { initSearch } from "./ui/search.js";
 import { updateWishlistBadge } from "./ui/wishlistBadge.js";
@@ -28,6 +28,7 @@ const searchAllCheckbox = document.querySelector("#search-all-releases");
 const fromInput = document.querySelector("#release-from");
 const toInput = document.querySelector("#release-to");
 const genreContainer = document.querySelector(".genre-filter");
+const languageSelect = document.querySelector("#language-select");
 
 let activeMovies = [];
 let shownCount = 0;
@@ -75,6 +76,7 @@ async function applyFilters() {
 
   const from = searchAllCheckbox.checked ? null : fromInput.value;
   const to = searchAllCheckbox.checked ? null : toInput.value;
+  const language = languageSelect.value || null;
 
   grid.innerHTML = `<p class="status">Loading movies...</p>`;
   loadMoreWrapper.style.display = "none";
@@ -84,16 +86,17 @@ async function applyFilters() {
       category,
       genreId: selectedGenreId,
       fromDate: from,
-      toDate: to
+      toDate: to,
+      language
     });
 
-    if (thisRequestId !== requestId) return; // a newer request superseded this one
+    if (thisRequestId !== requestId) return;
 
     activeMovies = pool;
     shownCount = PAGE_SIZE;
 
     if (activeMovies.length === 0) {
-      grid.innerHTML = `<p class="status">No Indian movies match these filters right now.</p>`;
+      grid.innerHTML = `<p class="status">No movies match these filters right now.</p>`;
       return;
     }
 
@@ -106,6 +109,23 @@ async function applyFilters() {
   }
 }
 
+languageSelect.addEventListener("change", applyFilters);
+
+async function populateLanguageDropdown() {
+  try {
+    const languages = await fetchAllLanguages();
+
+    const optionsHtml = languages
+      .map((lang) => `<option value="${lang.iso_639_1}">${lang.english_name}</option>`)
+      .join("");
+
+    languageSelect.insertAdjacentHTML("beforeend", optionsHtml);
+
+  } catch (error) {
+    console.error("Language dropdown failed to populate:", error);
+    // Fail silently — the dropdown just keeps its single default option.
+  }
+}
 loadMoreBtn.addEventListener("click", showMore);
 
 sortForm.addEventListener("change", (event) => {
@@ -154,7 +174,9 @@ async function init() {
   const defaultRadio = document.querySelector(`#${currentSort}`);
   if (defaultRadio) defaultRadio.checked = true;
 
+  // These two are completely independent — the movie grid must load
+  // successfully regardless of whether the language dropdown does.
+  populateLanguageDropdown();
   await applyFilters();
 }
-
 init();

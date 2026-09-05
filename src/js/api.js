@@ -421,8 +421,12 @@ function buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }) {
   return `${BASE_URL}/discover/movie?${params.toString()}`;
 }
 
-export async function buildIndianMoviesPool({ category = "popular", genreId = null, fromDate = null, toDate = null } = {}) {
-  const requests = CATEGORY_LANGUAGES.flatMap((lang) =>
+export async function buildIndianMoviesPool({ category = "popular", genreId = null, fromDate = null, toDate = null, language = null } = {}) {
+  // If the user picked one specific language, search only that one.
+  // Otherwise, fall back to pooling across our default set of Indian languages.
+  const languagesToQuery = language ? [language] : CATEGORY_LANGUAGES;
+
+  const requests = languagesToQuery.flatMap((lang) =>
     [1, 2, 3].map((page) =>
       fetch(buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }))
         .then((res) => (res.ok ? res.json() : { results: [] }))
@@ -440,4 +444,24 @@ export async function buildIndianMoviesPool({ category = "popular", genreId = nu
   });
 
   return Array.from(uniqueMap.values());
+}
+
+export async function fetchAllLanguages() {
+  const url = `${BASE_URL}/configuration/languages?api_key=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
+    const data = await response.json();
+
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter((lang) => lang.english_name)
+      .sort((a, b) => a.english_name.localeCompare(b.english_name));
+
+  } catch (error) {
+    console.error("Failed to fetch language list:", error);
+    return [];
+  }
 }
