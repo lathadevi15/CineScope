@@ -16,7 +16,69 @@
             <aside class="filters-sidebar">
                 <h3>Filters</h3>
                 <div class="filters-content">
-                    <p class="filters-placeholder">Filters coming soon.</p>
+                   <div class="filters-content">
+   <form>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="popularity-descending" checked>
+            <label for="popularity-descending">Popularity Descending</label>
+        </div>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="popularity-ascending">
+            <label for="popularity-ascending">Popularity Ascending</label>
+        </div>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="rating-descending">
+            <label for="rating-descending">Rating Descending</label>
+        </div>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="rating-ascending">
+            <label for="rating-ascending">Rating Ascending</label>
+        </div>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="release-date-descending">
+            <label for="release-date-descending">First Air Date Descending</label>
+        </div>
+        <div class="filter-option">
+            <input type="radio" name="tv-filters" id="release-date-ascending">
+            <label for="release-date-ascending">First Air Date Ascending</label>
+        </div>
+   </form>
+
+   <div class="release-date-filter">
+       <h4>First Air Dates</h4>
+       <div class="filter-option">
+           <input type="checkbox" id="search-all-releases" checked>
+           <label for="search-all-releases">Search all releases?</label>
+       </div>
+       <div class="date-range-fields">
+           <label for="release-from" class="date-label">From</label>
+           <input type="date" id="release-from" disabled>
+           <label for="release-to" class="date-label">To</label>
+           <input type="date" id="release-to" disabled>
+       </div>
+   </div>
+
+   <div class="genre-filter">
+        <h4>Genres</h4>
+        <button class="genre-btn" data-genre-id="10759">Action & Adventure</button>
+        <button class="genre-btn" data-genre-id="35">Comedy</button>
+        <button class="genre-btn" data-genre-id="80">Crime</button>
+        <button class="genre-btn" data-genre-id="99">Documentary</button>
+        <button class="genre-btn" data-genre-id="18">Drama</button>
+        <button class="genre-btn" data-genre-id="10751">Family</button>
+        <button class="genre-btn" data-genre-id="9648">Mystery</button>
+        <button class="genre-btn" data-genre-id="10765">Sci-Fi &amp; Fantasy</button>
+   </div>
+
+   <div class="language-filter">
+       <h4>Language</h4>
+       <select id="language-select">
+           <option value="">All Indian Languages</option>
+       </select>
+   </div>
+
+   <button class="btn-apply-filters" id="apply-filters-btn">Filter</button>
+</div>
                 </div>
             </aside>
 

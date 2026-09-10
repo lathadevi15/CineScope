@@ -29,12 +29,17 @@ const fromInput = document.querySelector("#release-from");
 const toInput = document.querySelector("#release-to");
 const genreContainer = document.querySelector(".genre-filter");
 const languageSelect = document.querySelector("#language-select");
+const applyFiltersBtn = document.querySelector("#apply-filters-btn");
 
 let activeMovies = [];
 let shownCount = 0;
 let currentSort = "popularity-descending";
-let selectedGenreId = null;
-let requestId = 0; // guards against a slow, stale fetch overwriting a newer one
+let requestId = 0;
+
+// Pending selections — what the user has clicked/typed, but not yet applied.
+// These only take effect once the Filter button is clicked.
+// Pending selections — what the user has clicked, but not yet applied.
+let pendingGenreIds = new Set();
 
 function sortMovies(movies, sortBy) {
   const sorted = [...movies];
@@ -71,12 +76,15 @@ function showMore() {
   renderVisible();
 }
 
-async function applyFilters() {
+// Fires a fresh fetch using whatever is currently pending — called only
+// when the Filter button is clicked, or once automatically on page load.
+async function fetchAndApply() {
   const thisRequestId = ++requestId;
 
   const from = searchAllCheckbox.checked ? null : fromInput.value;
   const to = searchAllCheckbox.checked ? null : toInput.value;
   const language = languageSelect.value || null;
+  const genreIds = pendingGenreIds.size > 0 ? Array.from(pendingGenreIds) : null;
 
   grid.innerHTML = `<p class="status">Loading movies...</p>`;
   loadMoreWrapper.style.display = "none";
@@ -84,7 +92,7 @@ async function applyFilters() {
   try {
     const pool = await buildIndianMoviesPool({
       category,
-      genreId: selectedGenreId,
+      genreIds,
       fromDate: from,
       toDate: to,
       language
@@ -109,60 +117,54 @@ async function applyFilters() {
   }
 }
 
-languageSelect.addEventListener("change", applyFilters);
-
-async function populateLanguageDropdown() {
-  try {
-    const languages = await fetchAllLanguages();
-
-    const optionsHtml = languages
-      .map((lang) => `<option value="${lang.iso_639_1}">${lang.english_name}</option>`)
-      .join("");
-
-    languageSelect.insertAdjacentHTML("beforeend", optionsHtml);
-
-  } catch (error) {
-    console.error("Language dropdown failed to populate:", error);
-    // Fail silently — the dropdown just keeps its single default option.
-  }
-}
 loadMoreBtn.addEventListener("click", showMore);
 
+// Sorting stays instant — it's free (no fetch), so no reason to gate it
+// behind the Filter button.
 sortForm.addEventListener("change", (event) => {
   currentSort = event.target.id;
   renderVisible();
 });
 
+// Everything below only updates PENDING state — no fetch happens here.
+
 searchAllCheckbox.addEventListener("change", () => {
   const disabled = searchAllCheckbox.checked;
   fromInput.disabled = disabled;
   toInput.disabled = disabled;
-  applyFilters();
+  // No fetchAndApply() call — waits for the Filter button.
 });
 
-fromInput.addEventListener("change", applyFilters);
-toInput.addEventListener("change", applyFilters);
-
-// One listener on the container, not fifteen on each button — event delegation.
 genreContainer.addEventListener("click", (event) => {
   const btn = event.target.closest(".genre-btn");
   if (!btn) return;
-  btn.classList.toggle("selected");
 
   const clickedId = btn.dataset.genreId;
 
-  // Clicking the already-active genre again clears the filter (toggle off).
-  if (selectedGenreId === clickedId) {
-    selectedGenreId = null;
+  if (pendingGenreIds.has(clickedId)) {
+    pendingGenreIds.delete(clickedId);
     btn.classList.remove("active");
   } else {
-    genreContainer.querySelectorAll(".genre-btn").forEach((b) => b.classList.remove("active"));
-    selectedGenreId = clickedId;
+    pendingGenreIds.add(clickedId);
     btn.classList.add("active");
   }
-
-  applyFilters();
+  // No fetchAndApply() call — waits for the Filter button, same as before.
 });
+
+// The ONE place that actually triggers a new fetch from user interaction.
+applyFiltersBtn.addEventListener("click", fetchAndApply);
+
+async function populateLanguageDropdown() {
+  try {
+    const languages = await fetchAllLanguages();
+    const optionsHtml = languages
+      .map((lang) => `<option value="${lang.iso_639_1}">${lang.english_name}</option>`)
+      .join("");
+    languageSelect.insertAdjacentHTML("beforeend", optionsHtml);
+  } catch (error) {
+    console.error("Language dropdown failed to populate:", error);
+  }
+}
 
 async function init() {
   await loadHeader();
@@ -174,9 +176,8 @@ async function init() {
   const defaultRadio = document.querySelector(`#${currentSort}`);
   if (defaultRadio) defaultRadio.checked = true;
 
-  // These two are completely independent — the movie grid must load
-  // successfully regardless of whether the language dropdown does.
-  populateLanguageDropdown();
-  await applyFilters();
+  populateLanguageDropdown();       // independent — doesn't block movie loading
+  await fetchAndApply();            // initial load, using default filter state
 }
+
 init();

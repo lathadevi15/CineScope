@@ -80,52 +80,94 @@ function buildIndianTVUrl(category, page) {
   }
 }
 
-export async function fetchTVByCategory(category, page = 1) {
-  // Airing Today has no country filter on TMDB's side, so we fetch the
-  // global list and filter down to Indian-origin shows ourselves.
+function buildTVDiscoverUrl({ category, lang, page, genreIds, fromDate, toDate }) {
+  const params = new URLSearchParams({
+    api_key: API_KEY,
+    page: String(page)
+  });
+
+  if (lang) {
+    params.set("with_original_language", lang);
+  } else {
+    params.set("with_origin_country", "IN");
+  }
+
+  switch (category) {
+    case "top_rated":
+      params.set("sort_by", "vote_average.desc");
+      params.set("vote_count.gte", "50");
+      break;
+    case "on_tv":
+      params.set("sort_by", "popularity.desc");
+      params.set("with_status", "0");
+      break;
+    case "popular":
+    default:
+      params.set("sort_by", "popularity.desc");
+  }
+
+  if (genreIds && genreIds.length > 0) {
+    params.set("with_genres", genreIds.join("|"));
+  }
+
+  if (fromDate) params.set("first_air_date.gte", fromDate);
+  if (toDate) params.set("first_air_date.lte", toDate);
+
+  return `${BASE_URL}/discover/tv?${params.toString()}`;
+}
+
+export async function buildIndianTVPool({ category = "popular", genreIds = null, fromDate = null, toDate = null, language = null } = {}) {
+  // Airing Today has no country/language filter on TMDB's side — fetch the
+  // global list and filter down to Indian-origin shows client-side, same
+  // approach as before, but now also applying genre/date if the user picked any.
   if (category === "airing_today") {
-    const url = `${BASE_URL}/tv/airing_today?api_key=${API_KEY}&page=${page}`;
+    const url = `${BASE_URL}/tv/airing_today?api_key=${API_KEY}&page=1`;
 
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
       const data = await response.json();
 
-      const indianOnly = data.results.filter(
-        (show) => show.origin_country && show.origin_country.includes("IN")
-      );
+      return data.results.filter((show) => {
+        const isIndian = show.origin_country && show.origin_country.includes("IN");
+        const matchesGenre = !genreIds || genreIds.length === 0 ||
+          (show.genre_ids || []).some((id) => genreIds.includes(String(id)));
+        const airDate = show.first_air_date || "";
+        const matchesFrom = !fromDate || airDate >= fromDate;
+        const matchesTo = !toDate || airDate <= toDate;
 
-      return {
-        results: indianOnly,
-        page: data.page,
-        totalPages: data.total_pages
-      };
+        return isIndian && matchesGenre && matchesFrom && matchesTo;
+      });
+
     } catch (error) {
       console.error("Failed to fetch airing today TV shows:", error);
-      throw error;
+      return [];
     }
   }
 
-  // Popular, Top Rated, On TV — TMDB filters these by origin country for us.
-  const url = buildIndianTVUrl(category, page);
-  if (!url) throw new Error(`Unknown TV category: ${category}`);
+  // Popular, Top Rated, On TV — pool across languages (or one specific
+  // language if selected), same pattern as the movie pool.
+  const languagesToQuery = language ? [language] : CATEGORY_LANGUAGES;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`TMDB API error: ${response.status}`);
-    const data = await response.json();
+  const requests = languagesToQuery.flatMap((lang) =>
+    [1, 2].map((page) =>
+      fetch(buildTVDiscoverUrl({ category, lang: language ? lang : null, page, genreIds, fromDate, toDate }))
+        .then((res) => (res.ok ? res.json() : { results: [] }))
+        .then((data) => data.results)
+        .catch(() => [])
+    )
+  );
 
-    return {
-      results: data.results,
-      page: data.page,
-      totalPages: data.total_pages
-    };
-  } catch (error) {
-    console.error(`Failed to fetch ${category} TV shows:`, error);
-    throw error;
-  }
+  const resultGroups = await Promise.all(requests);
+  const merged = resultGroups.flat();
+
+  const uniqueMap = new Map();
+  merged.forEach((show) => {
+    if (!uniqueMap.has(show.id)) uniqueMap.set(show.id, show);
+  });
+
+  return Array.from(uniqueMap.values());
 }
-
 export async function fetchTVDetails(tvId) {
   const url = `${BASE_URL}/tv/${tvId}?api_key=${API_KEY}&append_to_response=credits,videos,similar`;
 
@@ -366,8 +408,7 @@ export async function fetchMoviesByLanguage(languageCode, page = 1) {
     throw error;
   }
 }
-
-function buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }) {
+function buildDiscoverUrl({ category, lang, page, genreIds, fromDate, toDate }) {
   const params = new URLSearchParams({
     api_key: API_KEY,
     with_original_language: lang,
@@ -402,14 +443,12 @@ function buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }) {
       params.set("sort_by", "popularity.desc");
   }
 
-  // A genre selection narrows within whatever category is active — it's
-  // a filter layered ON TOP of the category, not a replacement for it.
-  if (genreId) {
-    params.set("with_genres", String(genreId));
+  // Multiple genres joined with "|" means OR — a movie matching ANY
+  // selected genre qualifies, not just movies matching every one.
+  if (genreIds && genreIds.length > 0) {
+    params.set("with_genres", genreIds.join("|"));
   }
 
-  // An explicit user-picked date range overrides the category's own
-  // built-in date window (e.g. "Now Playing"'s automatic recent-weeks range).
   if (fromDate || toDate) {
     params.delete("with_release_type");
     if (fromDate) params.set("primary_release_date.gte", fromDate);
@@ -421,14 +460,12 @@ function buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }) {
   return `${BASE_URL}/discover/movie?${params.toString()}`;
 }
 
-export async function buildIndianMoviesPool({ category = "popular", genreId = null, fromDate = null, toDate = null, language = null } = {}) {
-  // If the user picked one specific language, search only that one.
-  // Otherwise, fall back to pooling across our default set of Indian languages.
+export async function buildIndianMoviesPool({ category = "popular", genreIds = null, fromDate = null, toDate = null, language = null } = {}) {
   const languagesToQuery = language ? [language] : CATEGORY_LANGUAGES;
 
   const requests = languagesToQuery.flatMap((lang) =>
     [1, 2, 3].map((page) =>
-      fetch(buildDiscoverUrl({ category, lang, page, genreId, fromDate, toDate }))
+      fetch(buildDiscoverUrl({ category, lang, page, genreIds, fromDate, toDate }))
         .then((res) => (res.ok ? res.json() : { results: [] }))
         .then((data) => data.results)
         .catch(() => [])

@@ -209,22 +209,26 @@
   cursor: not-allowed;
 }
 .genre-btn {
-  padding: 8px 10px;
-  font-size: 13px;
-  color: #fff !important;
-  background-color: transparent;
-  border: 1px solid #f3f2f2;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 8px 16px;
   border-radius: 20px;
-  margin: 3px;
+  font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  margin: 2px;
 }
 
-.genre-btn:hover,
-.genre-btn.selected {
-  color: #000 !important;
-  background-color: #fff;
+.genre-btn:hover {
+  border-color: #7b3ff2;
 }
 
+.genre-btn.active {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
 .language-filter {
   margin-top: 24px;
   padding-top: 20px;
@@ -266,4 +270,23 @@
 .language-filter select option {
   background: #1a2234;
   color: #fff;
+}
+
+.btn-apply-filters {
+  width: 100%;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #2a3346;
+  background: #7b3ff2;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-apply-filters:hover {
+  background: #6a2fe0;
 }
