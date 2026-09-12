@@ -1,64 +1,77 @@
 <header class="header">
+  <button class="menu-toggle-btn" aria-label="Open menu">☰</button>
+
   <div class="logo">🎬 <span>CineScope</span></div>
 
-  <nav class="navbar">
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-drawer-header">
+      <span class="drawer-title">Menu</span>
+      <button class="nav-close-btn" aria-label="Close menu">✕</button>
+    </div>
+
     <ul class="nav-links">
       <li><a href="index.html" data-page="home">Home</a></li>
-          <li class="dropdown">
-  <a href="#">Movies ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="movies-list.html?category=popular">Popular</a></li>
-    <li><a href="movies-list.html?category=trending">Trending</a></li>
-    <li><a href="movies-list.html?category=top_rated">Top Rated</a></li>
-    <li><a href="movies-list.html?category=now_playing">Now Playing</a></li>
-    <li><a href="movies-list.html?category=upcoming">Upcoming</a></li>
-  </ul>
-</li>
-     <li class="dropdown">
-  <a href="#">TV Shows ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="tv-list.html?category=popular">Popular</a></li>
-    <li><a href="tv-list.html?category=airing_today">Airing Today</a></li>
-    <li><a href="tv-list.html?category=top_rated">Top Rated</a></li>
-    <li><a href="tv-list.html?category=on_tv">On TV</a></li>
-  </ul>
-</li>
+
       <li class="dropdown">
-  <a href="#">People ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="people-list.html?category=popular">Popular</a></li>
-    <li><a href="people-list.html?category=actors">Actors</a></li>
-    <li><a href="people-list.html?category=actresses">Actresses</a></li>
-    <li><a href="people-list.html?category=directors">Directors</a></li>
-    <li><a href="people-list.html?category=composers">Music Composers</a></li>
-  </ul>
-</li>
-       
-     <li class="dropdown">
-  <a href="#">Genres ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="genre-list.html?id=28&name=Action">Action</a></li>
-    <li><a href="genre-list.html?id=12&name=Adventure">Adventure</a></li>
-    <li><a href="genre-list.html?id=35&name=Comedy">Comedy</a></li>
-    <li><a href="genre-list.html?id=18&name=Drama">Drama</a></li>
-    <li><a href="genre-list.html?id=14&name=Fantasy">Fantasy</a></li>
-    <li><a href="genre-list.html?id=27&name=Horror">Horror</a></li>
-    <li><a href="genre-list.html?id=878&name=Sci-Fi">Sci-Fi</a></li>
-  </ul>
-</li>
-       <li class="dropdown">
-  <a href="#">Languages ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="language-list.html?code=te&name=Telugu">Telugu</a></li>
-    <li><a href="language-list.html?code=hi&name=Hindi">Hindi</a></li>
-    <li><a href="language-list.html?code=ta&name=Tamil">Tamil</a></li>
-    <li><a href="language-list.html?code=ml&name=Malayalam">Malayalam</a></li>
-    <li><a href="language-list.html?code=kn&name=Kannada">Kannada</a></li>
-    <li><a href="language-list.html?code=en&name=English">English</a></li>
-  </ul>
-</li>
+        <a href="#">Movies ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="movies-list.html?category=popular">Popular</a></li>
+          <li><a href="movies-list.html?category=trending">Trending</a></li>
+          <li><a href="movies-list.html?category=top_rated">Top Rated</a></li>
+          <li><a href="movies-list.html?category=now_playing">Now Playing</a></li>
+          <li><a href="movies-list.html?category=upcoming">Upcoming</a></li>
+        </ul>
+      </li>
+
+      <li class="dropdown">
+        <a href="#">TV Shows ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="tv-list.html?category=popular">Popular</a></li>
+          <li><a href="tv-list.html?category=airing_today">Airing Today</a></li>
+          <li><a href="tv-list.html?category=top_rated">Top Rated</a></li>
+          <li><a href="tv-list.html?category=on_tv">On TV</a></li>
+        </ul>
+      </li>
+
+      <li class="dropdown">
+        <a href="#">People ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="people-list.html?category=popular">Popular</a></li>
+          <li><a href="people-list.html?category=actors">Actors</a></li>
+          <li><a href="people-list.html?category=actresses">Actresses</a></li>
+          <li><a href="people-list.html?category=directors">Directors</a></li>
+          <li><a href="people-list.html?category=composers">Music Composers</a></li>
+        </ul>
+      </li>
+
+      <li class="dropdown">
+        <a href="#">Genres ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="genre-list.html?id=28&name=Action">Action</a></li>
+          <li><a href="genre-list.html?id=12&name=Adventure">Adventure</a></li>
+          <li><a href="genre-list.html?id=35&name=Comedy">Comedy</a></li>
+          <li><a href="genre-list.html?id=18&name=Drama">Drama</a></li>
+          <li><a href="genre-list.html?id=14&name=Fantasy">Fantasy</a></li>
+          <li><a href="genre-list.html?id=27&name=Horror">Horror</a></li>
+          <li><a href="genre-list.html?id=878&name=Sci-Fi">Sci-Fi</a></li>
+        </ul>
+      </li>
+
+      <li class="dropdown">
+        <a href="#">Languages ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="language-list.html?code=te&name=Telugu">Telugu</a></li>
+          <li><a href="language-list.html?code=hi&name=Hindi">Hindi</a></li>
+          <li><a href="language-list.html?code=ta&name=Tamil">Tamil</a></li>
+          <li><a href="language-list.html?code=ml&name=Malayalam">Malayalam</a></li>
+          <li><a href="language-list.html?code=kn&name=Kannada">Kannada</a></li>
+          <li><a href="language-list.html?code=en&name=English">English</a></li>
+        </ul>
+      </li>
     </ul>
   </nav>
+
+  <div class="nav-overlay"></div>
 
   <div class="search-box">
     <span class="search-icon">🔍</span>
@@ -68,10 +81,20 @@
   </div>
 
   <div class="header-icons">
- 
+    <button class="search-icon-btn" aria-label="Search">🔍</button>
     <a href="wishlist.html" class="wishlist-link">
       ❤️ <span class="wishlist-count">0</span>
     </a>
     <div class="user-avatar">👤</div>
   </div>
+  <div class="mobile-search-overlay">
+  <div class="mobile-search-box">
+    <div class="mobile-search-top">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="mobile-search-input" placeholder="Search movies, TV shows..." />
+      <button class="mobile-search-close" aria-label="Close search">✕</button>
+    </div>
+    <div class="mobile-search-results"></div>
+  </div>
+</div>
 </header>

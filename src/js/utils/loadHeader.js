@@ -1,4 +1,6 @@
-    // src/js/utils/loadHeader.js
+// src/js/utils/loadHeader.js
+
+import { initMobileNav } from "./mobileNav.js";
 
 export async function loadHeader() {
   const placeholder = document.querySelector("#header-placeholder");
@@ -12,6 +14,7 @@ export async function loadHeader() {
     placeholder.innerHTML = html;
 
     highlightActiveNavLink();
+    initMobileNav();
 
   } catch (error) {
     console.error("Header failed to load:", error);

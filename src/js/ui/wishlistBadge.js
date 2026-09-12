@@ -8,5 +8,5 @@ export function updateWishlistBadge() {
 
   const count = getWishlist().length;
   badge.textContent = count;
-  badge.style.display = count > 0 ? "inline-block" : "none";
+  badge.style.display = count > 0 ? "flex" : "none";
 }
